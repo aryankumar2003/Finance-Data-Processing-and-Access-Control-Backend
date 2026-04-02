@@ -6,6 +6,7 @@ import { errorHandler } from './middleware/errorHandler'
 import authRouter from './modules/auth/auth.router'
 import transactionRouter from './modules/transactions/transactions.router'
 import userRouter from './modules/users/users.router'
+import dashboardRouter from './modules/dashboard/dashboard.router'
 
 const app = express()
 
@@ -17,7 +18,7 @@ app.use(globalLimiter)
 app.use('/api/auth', authRouter)
 app.use('/api/transactions', transactionRouter)
 app.use('/api/users', userRouter)
-
+app.use('/api/dashboard', dashboardRouter)
 
 app.use(errorHandler)
 
