@@ -137,13 +137,13 @@ Copy `.env.example` to `.env` and fill in all values. The app validates these at
 
 | Variable                  | Required | Description                                                                   |
 | ------------------------- | -------- | ----------------------------------------------------------------------------- |
-| `DATABASE_URL`          | ✅       | PostgreSQL connection string, e.g.`postgresql://user:pass@host:5432/dbname` |
-| `JWT_SECRET`            | ✅       | Secret for signing JWTs.**Must be at least 32 characters.**             |
-| `PORT`                  | ❌       | HTTP port. Defaults to `3000`.                                              |
-| `NODE_ENV`              | ❌       | `development`, `production`, or `test`. Defaults to `development`.    |
-| `SEED_ADMIN_PASSWORD`   | ❌       | Override default admin seed password. Defaults to `Admin1234!`              |
-| `SEED_ANALYST_PASSWORD` | ❌       | Override default analyst seed password. Defaults to `Analyst1234!`          |
-| `SEED_VIEWER_PASSWORD`  | ❌       | Override default viewer seed password. Defaults to `Viewer1234!`            |
+| `DATABASE_URL`          | Yes       | PostgreSQL connection string, e.g.`postgresql://user:pass@host:5432/dbname` |
+| `JWT_SECRET`            | Yes       | Secret for signing JWTs.**Must be at least 32 characters.**             |
+| `PORT`                  | No       | HTTP port. Defaults to `3000`.                                              |
+| `NODE_ENV`              | No       | `development`, `production`, or `test`. Defaults to `development`.    |
+| `SEED_ADMIN_PASSWORD`   | No       | Override default admin seed password. Defaults to `Admin1234!`              |
+| `SEED_ANALYST_PASSWORD` | No       | Override default analyst seed password. Defaults to `Analyst1234!`          |
+| `SEED_VIEWER_PASSWORD`  | No       | Override default viewer seed password. Defaults to `Viewer1234!`            |
 
 **Generating a secure JWT secret:**
 
@@ -652,21 +652,21 @@ Subsequent requests:
 
 | Endpoint                         | VIEWER | ANALYST | ADMIN |
 | -------------------------------- | ------ | ------- | ----- |
-| `POST /auth/register`          | ✅     | ✅      | ✅    |
-| `POST /auth/login`             | ✅     | ✅      | ✅    |
-| `GET /transactions` (own only) | ✅     | ✅      | —    |
-| `GET /transactions` (all)      | —     | —      | ✅    |
-| `POST /transactions`           | ❌     | ❌      | ✅    |
-| `PATCH /transactions/:id`      | ❌     | ❌      | ✅    |
-| `DELETE /transactions/:id`     | ❌     | ❌      | ✅    |
-| `GET /users/me`                | ✅     | ✅      | ✅    |
-| `GET /users` (admin list)      | ❌     | ❌      | ✅    |
-| `POST /users`                  | ❌     | ❌      | ✅    |
-| `PATCH/DELETE /users/:id`      | ❌     | ❌      | ✅    |
-| `GET /dashboard/summary`       | ✅     | ✅      | ✅    |
-| `GET /dashboard/recent`        | ✅     | ✅      | ✅    |
-| `GET /dashboard/by-category`   | ❌     | ✅      | ✅    |
-| `GET /dashboard/trends`        | ❌     | ✅      | ✅    |
+| `POST /auth/register`          | Yes     | Yes      | Yes    |
+| `POST /auth/login`             | Yes     | Yes      | Yes    |
+| `GET /transactions` (own only) | Yes     | Yes      | —    |
+| `GET /transactions` (all)      | —     | —      | Yes    |
+| `POST /transactions`           | No     | No      | Yes    |
+| `PATCH /transactions/:id`      | No     | No      | Yes    |
+| `DELETE /transactions/:id`     | No     | No      | Yes    |
+| `GET /users/me`                | Yes     | Yes      | Yes    |
+| `GET /users` (admin list)      | No     | No      | Yes    |
+| `POST /users`                  | No     | No      | Yes    |
+| `PATCH/DELETE /users/:id`      | No     | No      | Yes    |
+| `GET /dashboard/summary`       | Yes     | Yes      | Yes    |
+| `GET /dashboard/recent`        | Yes     | Yes      | Yes    |
+| `GET /dashboard/by-category`   | No     | Yes      | Yes    |
+| `GET /dashboard/trends`        | No     | Yes      | Yes    |
 
 ### Rate Limiting
 

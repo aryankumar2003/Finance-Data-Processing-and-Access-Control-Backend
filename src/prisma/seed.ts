@@ -14,9 +14,9 @@ const prisma = new PrismaClient({
 })
 
 // Seed passwords — override via env vars in CI / staging environments
-const ADMIN_PASSWORD    = process.env.SEED_ADMIN_PASSWORD    ?? 'Admin1234!'
-const ANALYST_PASSWORD  = process.env.SEED_ANALYST_PASSWORD  ?? 'Analyst1234!'
-const VIEWER_PASSWORD   = process.env.SEED_VIEWER_PASSWORD   ?? 'Viewer1234!'
+const ADMIN_PASSWORD = process.env.SEED_ADMIN_PASSWORD ?? 'Admin1234!'
+const ANALYST_PASSWORD = process.env.SEED_ANALYST_PASSWORD ?? 'Analyst1234!'
+const VIEWER_PASSWORD = process.env.SEED_VIEWER_PASSWORD ?? 'Viewer1234!'
 
 async function main() {
     const [adminHash, analystHash, viewerHash] = await Promise.all([
@@ -80,7 +80,7 @@ async function main() {
         })
     }
 
-    console.log('✅ Seed complete')
+    console.log('Yes Seed complete')
     console.log(`   admin@zorvyn.com    — password: ${ADMIN_PASSWORD}`)
     console.log(`   analyst@zorvyn.com  — password: ${ANALYST_PASSWORD}`)
     console.log(`   viewer@zorvyn.com   — password: ${VIEWER_PASSWORD}`)
@@ -88,7 +88,7 @@ async function main() {
 
 main()
     .catch((e) => {
-        console.error('❌ Seed failed:', e)
+        console.error('No Seed failed:', e)
         process.exit(1)
     })
     .finally(async () => {
