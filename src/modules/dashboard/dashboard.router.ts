@@ -8,15 +8,13 @@ import { apiResponse } from '../../utils/apiResponse'
 import type { TrendQueryInput, RecentQueryInput } from './dashboard.schema'
 import { trendQuerySchema, recentQuerySchema } from './dashboard.schema'
 
-const router = Router()
-
-router.use(authenticate)
 /**
  * @openapi
  * /api/dashboard/summary:
  *   get:
- *     tags: [Dashboard]
- *     summary: Get total income, expenses and net balance
+ *     tags:
+ *       - Dashboard
+ *     summary: Total income, expenses and net balance
  *     security:
  *       - bearerAuth: []
  *     responses:
@@ -34,8 +32,9 @@ router.use(authenticate)
  *
  * /api/dashboard/by-category:
  *   get:
- *     tags: [Dashboard]
- *     summary: Get category-wise totals
+ *     tags:
+ *       - Dashboard
+ *     summary: Category-wise income and expense totals
  *     security:
  *       - bearerAuth: []
  *     responses:
@@ -52,11 +51,14 @@ router.use(authenticate)
  *                       type: array
  *                       items:
  *                         $ref: '#/components/schemas/CategoryTotal'
+ *       403:
+ *         description: Analyst and Admin only
  *
  * /api/dashboard/trends:
  *   get:
- *     tags: [Dashboard]
- *     summary: Get monthly or weekly trends
+ *     tags:
+ *       - Dashboard
+ *     summary: Monthly or weekly income and expense trends
  *     security:
  *       - bearerAuth: []
  *     parameters:
@@ -71,14 +73,16 @@ router.use(authenticate)
  *         schema:
  *           type: string
  *           format: date
+ *           example: "2024-01-01"
  *       - in: query
  *         name: to
  *         schema:
  *           type: string
  *           format: date
+ *           example: "2024-12-31"
  *     responses:
  *       200:
- *         description: Trend data
+ *         description: Trend data grouped by period
  *         content:
  *           application/json:
  *             schema:
@@ -90,11 +94,14 @@ router.use(authenticate)
  *                       type: array
  *                       items:
  *                         $ref: '#/components/schemas/TrendEntry'
+ *       403:
+ *         description: Analyst and Admin only
  *
  * /api/dashboard/recent:
  *   get:
- *     tags: [Dashboard]
- *     summary: Get recent transactions
+ *     tags:
+ *       - Dashboard
+ *     summary: Most recent transactions
  *     security:
  *       - bearerAuth: []
  *     parameters:
@@ -106,9 +113,23 @@ router.use(authenticate)
  *           maximum: 50
  *     responses:
  *       200:
- *         description: Recent transactions
+ *         description: Recent transactions list
+ *         content:
+ *           application/json:
+ *             schema:
+ *               allOf:
+ *                 - $ref: '#/components/schemas/ApiSuccess'
+ *                 - type: object
+ *                   properties:
+ *                     data:
+ *                       type: array
+ *                       items:
+ *                         $ref: '#/components/schemas/Transaction'
  */
-// GET /api/dashboard/summary — all roles
+
+const router = Router()
+router.use(authenticate)
+
 router.get(
     '/summary',
     authorizeRole(['VIEWER', 'ANALYST', 'ADMIN']),
@@ -118,7 +139,6 @@ router.get(
     })
 )
 
-// GET /api/dashboard/by-category — analyst + admin
 router.get(
     '/by-category',
     authorizeRole(['ANALYST', 'ADMIN']),
@@ -128,7 +148,6 @@ router.get(
     })
 )
 
-// GET /api/dashboard/trends — analyst + admin
 router.get(
     '/trends',
     authorizeRole(['ANALYST', 'ADMIN']),
@@ -141,7 +160,6 @@ router.get(
     })
 )
 
-// GET /api/dashboard/recent — all roles
 router.get(
     '/recent',
     authorizeRole(['VIEWER', 'ANALYST', 'ADMIN']),

@@ -5,6 +5,11 @@ import { authorizeRole } from '../../middleware/authorizeRole'
 import { validate } from '../../middleware/validate'
 import { asyncHandler } from '../../utils/asyncHandler'
 import { apiResponse } from '../../utils/apiResponse'
+import type {
+    CreateTransactionInput,
+    UpdateTransactionInput,
+    TransactionFilterInput,
+} from './transactions.schema'
 import {
     createTransactionSchema,
     updateTransactionSchema,
@@ -12,20 +17,12 @@ import {
     transactionParamsSchema,
 } from './transactions.schema'
 
-import type {
-    CreateTransactionInput,
-    UpdateTransactionInput,
-    TransactionFilterInput,
-} from './transactions.schema'
-
-const router = Router()
-
-router.use(authenticate)
 /**
  * @openapi
  * /api/transactions:
  *   get:
- *     tags: [Transactions]
+ *     tags:
+ *       - Transactions
  *     summary: List transactions
  *     security:
  *       - bearerAuth: []
@@ -39,16 +36,19 @@ router.use(authenticate)
  *         name: category
  *         schema:
  *           type: string
+ *           example: salary
  *       - in: query
  *         name: from
  *         schema:
  *           type: string
  *           format: date
+ *           example: "2024-01-01"
  *       - in: query
  *         name: to
  *         schema:
  *           type: string
  *           format: date
+ *           example: "2024-12-31"
  *       - in: query
  *         name: page
  *         schema:
@@ -61,7 +61,7 @@ router.use(authenticate)
  *           default: 20
  *     responses:
  *       200:
- *         description: Paginated transactions
+ *         description: Paginated list of transactions
  *         content:
  *           application/json:
  *             schema:
@@ -78,8 +78,11 @@ router.use(authenticate)
  *                             $ref: '#/components/schemas/Transaction'
  *                         meta:
  *                           $ref: '#/components/schemas/PaginationMeta'
+ *       401:
+ *         description: Unauthenticated
  *   post:
- *     tags: [Transactions]
+ *     tags:
+ *       - Transactions
  *     summary: Create a transaction
  *     security:
  *       - bearerAuth: []
@@ -88,34 +91,32 @@ router.use(authenticate)
  *       content:
  *         application/json:
  *           schema:
- *             type: object
- *             required: [amount, type, category, date]
- *             properties:
- *               amount:
- *                 type: number
- *                 example: 5000
- *               type:
- *                 type: string
- *                 enum: [INCOME, EXPENSE]
- *               category:
- *                 type: string
- *                 example: salary
- *               date:
- *                 type: string
- *                 format: date
- *                 example: "2024-03-01"
- *               notes:
- *                 type: string
- *                 example: March salary
+ *             $ref: '#/components/schemas/CreateTransactionInput'
+ *           example:
+ *             amount: 5000
+ *             type: INCOME
+ *             category: salary
+ *             date: "2024-03-01"
+ *             notes: March salary
  *     responses:
  *       201:
  *         description: Transaction created
+ *         content:
+ *           application/json:
+ *             schema:
+ *               allOf:
+ *                 - $ref: '#/components/schemas/ApiSuccess'
+ *                 - type: object
+ *                   properties:
+ *                     data:
+ *                       $ref: '#/components/schemas/Transaction'
  *       403:
  *         description: Admin only
  *
  * /api/transactions/{id}:
  *   get:
- *     tags: [Transactions]
+ *     tags:
+ *       - Transactions
  *     summary: Get transaction by ID
  *     security:
  *       - bearerAuth: []
@@ -125,13 +126,24 @@ router.use(authenticate)
  *         required: true
  *         schema:
  *           type: string
+ *         description: Transaction ID from the list endpoint
  *     responses:
  *       200:
  *         description: Transaction found
+ *         content:
+ *           application/json:
+ *             schema:
+ *               allOf:
+ *                 - $ref: '#/components/schemas/ApiSuccess'
+ *                 - type: object
+ *                   properties:
+ *                     data:
+ *                       $ref: '#/components/schemas/Transaction'
  *       404:
- *         description: Not found
+ *         description: Transaction not found
  *   patch:
- *     tags: [Transactions]
+ *     tags:
+ *       - Transactions
  *     summary: Update a transaction
  *     security:
  *       - bearerAuth: []
@@ -145,27 +157,18 @@ router.use(authenticate)
  *       content:
  *         application/json:
  *           schema:
- *             type: object
- *             properties:
- *               amount:
- *                 type: number
- *               type:
- *                 type: string
- *                 enum: [INCOME, EXPENSE]
- *               category:
- *                 type: string
- *               date:
- *                 type: string
- *                 format: date
- *               notes:
- *                 type: string
+ *             $ref: '#/components/schemas/UpdateTransactionInput'
+ *           example:
+ *             amount: 6000
+ *             notes: Updated salary amount
  *     responses:
  *       200:
  *         description: Transaction updated
  *       404:
- *         description: Not found
+ *         description: Transaction not found
  *   delete:
- *     tags: [Transactions]
+ *     tags:
+ *       - Transactions
  *     summary: Soft delete a transaction
  *     security:
  *       - bearerAuth: []
@@ -179,8 +182,12 @@ router.use(authenticate)
  *       200:
  *         description: Transaction deleted
  *       404:
- *         description: Not found
+ *         description: Transaction not found
  */
+
+const router = Router()
+router.use(authenticate)
+
 router.get(
     '/',
     authorizeRole(['VIEWER', 'ANALYST', 'ADMIN']),

@@ -47,9 +47,7 @@ Thumbs.db
 # TypeScript
 *.tsbuildinfo
 
-# Package manager locks (keep only one — remove the ones you don't use)
-# yarn.lock
-# pnpm-lock.yaml
+
 /src/generated/prisma
 
 # Private scratch files

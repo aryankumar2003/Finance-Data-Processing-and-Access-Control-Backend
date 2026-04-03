@@ -22,12 +22,28 @@ app.use('/api/auth', authRouter)
 app.use('/api/transactions', transactionRouter)
 app.use('/api/users', userRouter)
 app.use('/api/dashboard', dashboardRouter)
-app.use('/api/docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec, {
-    customSiteTitle: 'Zorvyn Finance API',
-    swaggerOptions: {
-        persistAuthorization: true,
-    },
-}))
+
+app.get('/api/docs.json', (_req, res) => {
+    res.setHeader('Content-Type', 'application/json')
+    res.send(swaggerSpec)
+})
+
+app.use(
+    '/api/docs',
+    swaggerUi.serve,
+    swaggerUi.setup(swaggerSpec, {
+        customSiteTitle: 'Zorvyn Finance API',
+        swaggerOptions: {
+            persistAuthorization: true,
+            defaultModelsExpandDepth: -1,
+            docExpansion: 'list',
+            filter: true,
+            tryItOutEnabled: true,
+        },
+    })
+)
+
+
 app.get('/health', (_req, res) => {
     res.json({ status: 'ok', timestamp: new Date().toISOString() })
 })

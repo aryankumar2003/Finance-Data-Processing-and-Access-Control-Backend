@@ -1,4 +1,5 @@
 import swaggerJsdoc from 'swagger-jsdoc'
+import path from 'path'
 
 const options: swaggerJsdoc.Options = {
     definition: {
@@ -6,18 +7,11 @@ const options: swaggerJsdoc.Options = {
         info: {
             title: 'Zorvyn Finance API',
             version: '1.0.0',
-            description:
-                'Finance Data Processing and Access Control Backend — REST API documentation',
+            description: 'Finance Data Processing and Access Control Backend — REST API documentation',
         },
         servers: [
-            {
-                url: 'http://localhost:3000',
-                description: 'Development server',
-            },
-            {
-                url: 'https://zorvyn-finance-backend.onrender.com',
-                description: 'Production server',
-            },
+            { url: 'http://localhost:3000', description: 'Development server' },
+            { url: 'https://zorvyn-finance-backend.onrender.com', description: 'Production server' },
         ],
         components: {
             securitySchemes: {
@@ -25,6 +19,7 @@ const options: swaggerJsdoc.Options = {
                     type: 'http',
                     scheme: 'bearer',
                     bearerFormat: 'JWT',
+                    description: 'Login via POST /api/auth/login to get your token, then click Authorize and paste it here.',
                 },
             },
             schemas: {
@@ -62,9 +57,9 @@ const options: swaggerJsdoc.Options = {
                     type: 'object',
                     properties: {
                         id: { type: 'string', example: 'clx1234abcd' },
-                        name: { type: 'string', example: 'John Doe' },
-                        email: { type: 'string', example: 'john@example.com' },
-                        role: { type: 'string', enum: ['VIEWER', 'ANALYST', 'ADMIN'] },
+                        name: { type: 'string', example: 'Super Admin' },
+                        email: { type: 'string', example: 'admin@zorvyn.com' },
+                        role: { type: 'string', enum: ['VIEWER', 'ANALYST', 'ADMIN'], example: 'ADMIN' },
                         isActive: { type: 'boolean', example: true },
                         createdAt: { type: 'string', format: 'date-time' },
                         updatedAt: { type: 'string', format: 'date-time' },
@@ -75,7 +70,7 @@ const options: swaggerJsdoc.Options = {
                     properties: {
                         id: { type: 'string', example: 'clx5678efgh' },
                         amount: { type: 'number', example: 5000.00 },
-                        type: { type: 'string', enum: ['INCOME', 'EXPENSE'] },
+                        type: { type: 'string', enum: ['INCOME', 'EXPENSE'], example: 'INCOME' },
                         category: { type: 'string', example: 'salary' },
                         date: { type: 'string', format: 'date-time' },
                         notes: { type: 'string', example: 'March salary', nullable: true },
@@ -121,11 +116,72 @@ const options: swaggerJsdoc.Options = {
                         net: { type: 'number', example: 3500.00 },
                     },
                 },
+                LoginInput: {
+                    type: 'object',
+                    required: ['email', 'password'],
+                    properties: {
+                        email: { type: 'string', example: 'admin@zorvyn.com' },
+                        password: { type: 'string', example: 'Admin1234' },
+                    },
+                },
+                RegisterInput: {
+                    type: 'object',
+                    required: ['name', 'email', 'password'],
+                    properties: {
+                        name: { type: 'string', example: 'John Doe' },
+                        email: { type: 'string', example: 'john@example.com' },
+                        password: { type: 'string', example: 'Password1' },
+                        role: { type: 'string', enum: ['VIEWER', 'ANALYST', 'ADMIN'], example: 'VIEWER' },
+                    },
+                },
+                CreateTransactionInput: {
+                    type: 'object',
+                    required: ['amount', 'type', 'category', 'date'],
+                    properties: {
+                        amount: { type: 'number', example: 5000.00 },
+                        type: { type: 'string', enum: ['INCOME', 'EXPENSE'], example: 'INCOME' },
+                        category: { type: 'string', example: 'salary' },
+                        date: { type: 'string', format: 'date', example: '2024-03-01' },
+                        notes: { type: 'string', example: 'March salary' },
+                    },
+                },
+                UpdateTransactionInput: {
+                    type: 'object',
+                    properties: {
+                        amount: { type: 'number', example: 6000.00 },
+                        type: { type: 'string', enum: ['INCOME', 'EXPENSE'] },
+                        category: { type: 'string', example: 'freelance' },
+                        date: { type: 'string', format: 'date' },
+                        notes: { type: 'string', example: 'Updated note' },
+                    },
+                },
+                CreateUserInput: {
+                    type: 'object',
+                    required: ['name', 'email', 'password'],
+                    properties: {
+                        name: { type: 'string', example: 'Jane Smith' },
+                        email: { type: 'string', example: 'jane@example.com' },
+                        password: { type: 'string', example: 'Password1' },
+                        role: { type: 'string', enum: ['VIEWER', 'ANALYST', 'ADMIN'], example: 'ANALYST' },
+                    },
+                },
+                UpdateUserInput: {
+                    type: 'object',
+                    properties: {
+                        name: { type: 'string', example: 'Jane Updated' },
+                        email: { type: 'string', example: 'jane.updated@example.com' },
+                        role: { type: 'string', enum: ['VIEWER', 'ANALYST', 'ADMIN'] },
+                        isActive: { type: 'boolean', example: true },
+                    },
+                },
             },
         },
         security: [{ bearerAuth: [] }],
     },
-    apis: ['./src/modules/**/*.router.ts'],
+    apis: [
+        path.join(__dirname, '../modules/**/*.router.ts'),
+        path.join(__dirname, '../modules/**/*.router.js'),
+    ],
 }
 
 export const swaggerSpec = swaggerJsdoc(options)

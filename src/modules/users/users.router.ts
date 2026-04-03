@@ -13,17 +13,14 @@ import {
     userFilterSchema,
 } from './users.schema'
 
-const router = Router()
-
-router.use(authenticate)
-
-// GET /api/users — admin only
 /**
  * @openapi
  * /api/users:
  *   get:
- *     tags: [Users]
+ *     tags:
+ *       - Users
  *     summary: List all users
+ *     description: Returns paginated list of all users. Admin only.
  *     security:
  *       - bearerAuth: []
  *     parameters:
@@ -36,6 +33,7 @@ router.use(authenticate)
  *         name: isActive
  *         schema:
  *           type: boolean
+ *           example: true
  *       - in: query
  *         name: page
  *         schema:
@@ -49,30 +47,83 @@ router.use(authenticate)
  *     responses:
  *       200:
  *         description: Paginated list of users
+ *         content:
+ *           application/json:
+ *             schema:
+ *               allOf:
+ *                 - $ref: '#/components/schemas/ApiSuccess'
+ *                 - type: object
+ *                   properties:
+ *                     data:
+ *                       type: object
+ *                       properties:
+ *                         data:
+ *                           type: array
+ *                           items:
+ *                             $ref: '#/components/schemas/User'
+ *                         meta:
+ *                           $ref: '#/components/schemas/PaginationMeta'
  *       401:
  *         description: Unauthenticated
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ApiError'
  *       403:
- *         description: Forbidden — admin only
- */
-router.get(
-    '/',
-    authorizeRole(['ADMIN']),
-    validate({ query: userFilterSchema }),
-    asyncHandler(async (req, res) => {
-        const result = await userService.getAll(
-            req.query as unknown as UserFilterInput
-        )
-        res.json(apiResponse.success(result))
-    })
-)
-
-// GET /api/users/me — all roles (get own profile)
-/**
- * @openapi
+ *         description: Admin only
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ApiError'
+ *   post:
+ *     tags:
+ *       - Users
+ *     summary: Create a new user
+ *     description: Creates a user directly without going through registration. Admin only.
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/CreateUserInput'
+ *           example:
+ *             name: Jane Smith
+ *             email: jane@example.com
+ *             password: Password1
+ *             role: ANALYST
+ *     responses:
+ *       201:
+ *         description: User created successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               allOf:
+ *                 - $ref: '#/components/schemas/ApiSuccess'
+ *                 - type: object
+ *                   properties:
+ *                     data:
+ *                       $ref: '#/components/schemas/User'
+ *       400:
+ *         description: Validation error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ApiError'
+ *       409:
+ *         description: Email already in use
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ApiError'
+ *
  * /api/users/me:
  *   get:
- *     tags: [Users]
+ *     tags:
+ *       - Users
  *     summary: Get own profile
+ *     description: Returns the currently authenticated user's profile. All roles.
  *     security:
  *       - bearerAuth: []
  *     responses:
@@ -89,7 +140,150 @@ router.get(
  *                       $ref: '#/components/schemas/User'
  *       401:
  *         description: Unauthenticated
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ApiError'
+ *
+ * /api/users/{id}:
+ *   get:
+ *     tags:
+ *       - Users
+ *     summary: Get user by ID
+ *     description: Returns a single user by their ID. Admin only.
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: The user's cuid
+ *         example: clx1234abcd
+ *     responses:
+ *       200:
+ *         description: User found
+ *         content:
+ *           application/json:
+ *             schema:
+ *               allOf:
+ *                 - $ref: '#/components/schemas/ApiSuccess'
+ *                 - type: object
+ *                   properties:
+ *                     data:
+ *                       $ref: '#/components/schemas/User'
+ *       404:
+ *         description: User not found
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ApiError'
+ *   patch:
+ *     tags:
+ *       - Users
+ *     summary: Update a user
+ *     description: Update name, email, role or active status. Admin only.
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *         example: clx1234abcd
+ *     requestBody:
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/UpdateUserInput'
+ *           example:
+ *             role: ANALYST
+ *             isActive: true
+ *     responses:
+ *       200:
+ *         description: User updated successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               allOf:
+ *                 - $ref: '#/components/schemas/ApiSuccess'
+ *                 - type: object
+ *                   properties:
+ *                     data:
+ *                       $ref: '#/components/schemas/User'
+ *       400:
+ *         description: Validation error or cannot deactivate own account
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ApiError'
+ *       404:
+ *         description: User not found
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ApiError'
+ *       409:
+ *         description: Email already in use
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ApiError'
+ *   delete:
+ *     tags:
+ *       - Users
+ *     summary: Deactivate a user
+ *     description: Soft deactivates the user — sets isActive to false. Admin only. Cannot deactivate own account.
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *         example: clx1234abcd
+ *     responses:
+ *       200:
+ *         description: User deactivated successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               allOf:
+ *                 - $ref: '#/components/schemas/ApiSuccess'
+ *                 - type: object
+ *                   properties:
+ *                     data:
+ *                       $ref: '#/components/schemas/User'
+ *       400:
+ *         description: Cannot deactivate own account or already inactive
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ApiError'
+ *       404:
+ *         description: User not found
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ApiError'
  */
+
+const router = Router()
+router.use(authenticate)
+
+router.get(
+    '/',
+    authorizeRole(['ADMIN']),
+    validate({ query: userFilterSchema }),
+    asyncHandler(async (req, res) => {
+        const result = await userService.getAll(req.query as unknown as UserFilterInput)
+        res.json(apiResponse.success(result))
+    })
+)
+
 router.get(
     '/me',
     authorizeRole(['VIEWER', 'ANALYST', 'ADMIN']),
@@ -99,74 +293,6 @@ router.get(
     })
 )
 
-// GET /api/users/:id — admin only
-/**
- * @openapi
- * /api/users/{id}:
- *   get:
- *     tags: [Users]
- *     summary: Get user by ID
- *     security:
- *       - bearerAuth: []
- *     parameters:
- *       - in: path
- *         name: id
- *         required: true
- *         schema:
- *           type: string
- *     responses:
- *       200:
- *         description: User found
- *       404:
- *         description: User not found
- *   patch:
- *     tags: [Users]
- *     summary: Update user
- *     security:
- *       - bearerAuth: []
- *     parameters:
- *       - in: path
- *         name: id
- *         required: true
- *         schema:
- *           type: string
- *     requestBody:
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             properties:
- *               name:
- *                 type: string
- *               email:
- *                 type: string
- *               role:
- *                 type: string
- *                 enum: [VIEWER, ANALYST, ADMIN]
- *               isActive:
- *                 type: boolean
- *     responses:
- *       200:
- *         description: User updated
- *       404:
- *         description: User not found
- *   delete:
- *     tags: [Users]
- *     summary: Deactivate user
- *     security:
- *       - bearerAuth: []
- *     parameters:
- *       - in: path
- *         name: id
- *         required: true
- *         schema:
- *           type: string
- *     responses:
- *       200:
- *         description: User deactivated
- *       400:
- *         description: Cannot deactivate own account
- */
 router.get(
     '/:id',
     authorizeRole(['ADMIN']),
@@ -177,38 +303,6 @@ router.get(
     })
 )
 
-// POST /api/users — admin only
-/**
- * @openapi
- * /api/users:
- *   post:
- *     tags: [Users]
- *     summary: Create a new user
- *     security:
- *       - bearerAuth: []
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             required: [name, email, password]
- *             properties:
- *               name:
- *                 type: string
- *               email:
- *                 type: string
- *               password:
- *                 type: string
- *               role:
- *                 type: string
- *                 enum: [VIEWER, ANALYST, ADMIN]
- *     responses:
- *       201:
- *         description: User created
- *       409:
- *         description: Email already in use
- */
 router.post(
     '/',
     authorizeRole(['ADMIN']),
@@ -219,7 +313,6 @@ router.post(
     })
 )
 
-// PATCH /api/users/:id — admin only
 router.patch(
     '/:id',
     authorizeRole(['ADMIN']),
@@ -234,7 +327,6 @@ router.patch(
     })
 )
 
-// DELETE /api/users/:id — admin only (soft deactivate)
 router.delete(
     '/:id',
     authorizeRole(['ADMIN']),
