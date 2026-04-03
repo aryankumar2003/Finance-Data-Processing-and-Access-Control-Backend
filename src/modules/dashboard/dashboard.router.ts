@@ -11,7 +11,103 @@ import { trendQuerySchema, recentQuerySchema } from './dashboard.schema'
 const router = Router()
 
 router.use(authenticate)
-
+/**
+ * @openapi
+ * /api/dashboard/summary:
+ *   get:
+ *     tags: [Dashboard]
+ *     summary: Get total income, expenses and net balance
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Dashboard summary
+ *         content:
+ *           application/json:
+ *             schema:
+ *               allOf:
+ *                 - $ref: '#/components/schemas/ApiSuccess'
+ *                 - type: object
+ *                   properties:
+ *                     data:
+ *                       $ref: '#/components/schemas/DashboardSummary'
+ *
+ * /api/dashboard/by-category:
+ *   get:
+ *     tags: [Dashboard]
+ *     summary: Get category-wise totals
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Category breakdown
+ *         content:
+ *           application/json:
+ *             schema:
+ *               allOf:
+ *                 - $ref: '#/components/schemas/ApiSuccess'
+ *                 - type: object
+ *                   properties:
+ *                     data:
+ *                       type: array
+ *                       items:
+ *                         $ref: '#/components/schemas/CategoryTotal'
+ *
+ * /api/dashboard/trends:
+ *   get:
+ *     tags: [Dashboard]
+ *     summary: Get monthly or weekly trends
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: query
+ *         name: period
+ *         schema:
+ *           type: string
+ *           enum: [monthly, weekly]
+ *           default: monthly
+ *       - in: query
+ *         name: from
+ *         schema:
+ *           type: string
+ *           format: date
+ *       - in: query
+ *         name: to
+ *         schema:
+ *           type: string
+ *           format: date
+ *     responses:
+ *       200:
+ *         description: Trend data
+ *         content:
+ *           application/json:
+ *             schema:
+ *               allOf:
+ *                 - $ref: '#/components/schemas/ApiSuccess'
+ *                 - type: object
+ *                   properties:
+ *                     data:
+ *                       type: array
+ *                       items:
+ *                         $ref: '#/components/schemas/TrendEntry'
+ *
+ * /api/dashboard/recent:
+ *   get:
+ *     tags: [Dashboard]
+ *     summary: Get recent transactions
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: query
+ *         name: limit
+ *         schema:
+ *           type: integer
+ *           default: 10
+ *           maximum: 50
+ *     responses:
+ *       200:
+ *         description: Recent transactions
+ */
 // GET /api/dashboard/summary — all roles
 router.get(
     '/summary',
