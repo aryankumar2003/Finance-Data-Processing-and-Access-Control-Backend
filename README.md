@@ -11,6 +11,7 @@ A production-oriented REST API for financial transaction management with role-ba
 - [Setup &amp; Installation](#setup--installation)
 - [Environment Variables](#environment-variables)
 - [Running the App](#running-the-app)
+- [Docker &amp; Deployment (Render)](#docker--deployment-render)
 - [Database](#database)
 - [API Reference](#api-reference)
   - [Auth](#auth)
@@ -184,7 +185,24 @@ The server starts at: `http://localhost:3000`
 
 Health check: `GET http://localhost:3000/healthCheck` → `{ "message": "OK" }`
 
----
+### Build &amp; run locally with Docker
+
+```bash
+# Build the image
+docker build -t zorvyn-backend .
+
+# Run with secrets passed inline (local testing only — do NOT script this with real values)
+docker run --rm \
+  -e DATABASE_URL="postgresql://user:pass@host:5432/zorvyn" \
+  -e JWT_SECRET="your-secret-here" \
+  -e NODE_ENV=production \
+  -p 3000:3000 \
+  zorvyn-backend
+```
+
+Health check: `GET http://localhost:3000/healthCheck`
+
+> **Tip:** For local development, keep using `npm run dev` (hot reload). Docker is for staging/production validation only.
 
 ## Database
 
