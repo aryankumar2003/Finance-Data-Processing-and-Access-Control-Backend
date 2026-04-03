@@ -20,6 +20,10 @@ app.use('/api/transactions', transactionRouter)
 app.use('/api/users', userRouter)
 app.use('/api/dashboard', dashboardRouter)
 
+app.use('/healthCheck', (req, res) => {
+    res.json({ message: 'OK' })
+})
+
 app.use(errorHandler)
 
 export default app

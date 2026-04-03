@@ -2,11 +2,7 @@ import { Request, Response, NextFunction } from 'express'
 import jwt from 'jsonwebtoken'
 import { env } from '../config/env'
 import { AppError } from '../utils/AppError'
-
-export interface JwtPayload {
-    userId: string
-    role: 'VIEWER' | 'ANALYST' | 'ADMIN'
-}
+import type { JwtPayload } from '../types'
 
 export const authenticate = (
     req: Request,
